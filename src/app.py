@@ -5,6 +5,8 @@ from .config import app_config
 from .models import db, bcrypt
 
 from .views.UserView import user_api as user_blueprint
+from .views.ReviewView import review_api as review_blueprint
+
 def create_app(env_name):
   """
   Create app
@@ -18,6 +20,7 @@ def create_app(env_name):
   db.init_app(app)
 
   app.register_blueprint(user_blueprint, url_prefix='/v1/users')
+  app.register_blueprint(review_blueprint, url_prefix="/v1/reviews")
   @app.route('/', methods=['GET'])
   def index():
     """
