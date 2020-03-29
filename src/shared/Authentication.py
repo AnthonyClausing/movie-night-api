@@ -59,7 +59,6 @@ class Auth():
       token = request.headers.get('api-token')
       data = Auth.decode_token(token)
       if data['error']:
-        print(data['error'], 'WTFFFFFFFFFFFFFFFFFFFFF')
         return make_response(jsonify({'error': 'whatthefuck'}), 400)
         
       user_id = data['data']['user_id']

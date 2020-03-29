@@ -61,7 +61,6 @@ class UserModel(db.Model):
 
   @staticmethod
   def get_user_by_email(v):
-    # print(UserModel.query.filter_by(email=v).first(), 'hello')
     return UserModel.query.filter_by(email=v).first()
 
 

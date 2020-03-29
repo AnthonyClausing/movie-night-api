@@ -1,6 +1,7 @@
 from flask import request, json, Response, Blueprint, g, jsonify, make_response
 from ..models.UserModel import UserModel, UserSchema
 from ..shared.Authentication import Auth
+from marshmallow import ValidationError
 
 user_api = Blueprint('users', __name__)
 user_schema = UserSchema()
@@ -12,11 +13,10 @@ def create():
   """
  
   req_data = request.get_json()
-  data = user_schema.load(req_data)
-
-  # if error:
-  #   return error
-  
+  try:
+    data = user_schema.load(req_data)
+  except ValidationError as error:
+    return custom_response(error.messages, 400)
   # check if user already exist in the db
   user_in_db = UserModel.get_user_by_email(data.get('email'))
   if user_in_db:
@@ -34,7 +34,6 @@ def create():
 @Auth.auth_required
 def get_all():
   users = UserModel.get_all_users()
-  print(users, 'HELLLOOOO')
   ser_users = user_schema.dump(users, many=True)
   return custom_response(ser_users, 200)
 
@@ -42,10 +41,11 @@ def get_all():
 @user_api.route('/login', methods=['POST'])
 def login():
   req_data = request.get_json()
-
-  data = user_schema.load(req_data, partial=True)
-  # if error:
-  #   return custom_response(error, 400)
+  
+  try:
+    data = user_schema.load(req_data, partial=True)
+  except ValidationError as error:
+    return custom_response(error.messages, 400)
   
   if not data.get('email') or not data.get('password'):
     return custom_response({'error': 'you need email and password to sign in'}, 400)
@@ -84,11 +84,11 @@ def update():
   Update me
   """
   req_data = request.get_json()
-  print(req_data)
-  data= user_schema.load(req_data, partial=True)
-  # if error:
-  #   return custom_response(error, 400)
-
+  try:
+    data = user_schema.load(req_data, partial=True)
+  except ValidationError as error:
+    return custom_response(error.messages, 400)
+  
   user = UserModel.get_one_user(g.user.get('id'))
   user.update(data)
   ser_user = user_schema.dump(user)

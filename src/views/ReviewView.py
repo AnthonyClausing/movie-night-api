@@ -1,6 +1,7 @@
 from flask import request, g, Blueprint, json, Response
 from ..shared.Authentication import Auth
 from ..models.ReviewModel import ReviewModel, ReviewSchema
+from marshmallow import ValidationError
 
 review_api = Blueprint('review_api', __name__)
 review_schema = ReviewSchema()
@@ -14,9 +15,10 @@ def create():
   """
   req_data = request.get_json()
   req_data['user_id'] = g.user.get('id')
-  data, error = review_schema.load(req_data)
-  if error:
-    return custom_response(error, 400)
+  try:
+    data = review_schema.load(req_data)
+  except ValidationError as error:
+    return custom_response(error.messages, 400)
   post = ReviewModel(data)
   post.save()
   data = review_schema.dump(post).data
@@ -55,8 +57,10 @@ def update(review_id):
   data = review_schema.dump(post).data
   if data.get('owner_id') != g.user.get('id'):
     return custom_response({'error': 'permission denied'}, 400)
-  
-  data = review_schema.load(req_data, partial=True)
+  try:
+    data = review_schema.load(req_data, partial=True)
+  except ValidationError as error:
+    return custom_response(error.messages, 400)
   post.update(data)
   
   data = review_schema.dump(post).data
