@@ -30,12 +30,12 @@ def create():
   token = Auth.generate_token(ser_data.get('id'))
   return custom_response({'jwt_token': token}, 201)
 
-@user_api.route('/', methods=['GET'])
-@Auth.auth_required
-def get_all():
-  users = UserModel.get_all_users()
-  ser_users = user_schema.dump(users, many=True)
-  return custom_response(ser_users, 200)
+# @user_api.route('/', methods=['GET'])
+# @Auth.auth_required
+# def get_all():
+#   users = UserModel.get_all_users()
+#   ser_users = user_schema.dump(users, many=True)
+#   return custom_response(ser_users, 200)
 
 
 @user_api.route('/login', methods=['POST'])
@@ -64,18 +64,18 @@ def login():
 
   return custom_response({'jwt_token': token}, 200)  
 
-@user_api.route('/<int:user_id>', methods=['GET'])
-@Auth.auth_required
-def get_a_user(user_id):
-  """
-  Get a single user
-  """
-  user = UserModel.get_one_user(user_id)
-  if not user:
-    return custom_response({'error': 'user not found'}, 404)
+# @user_api.route('/<int:user_id>', methods=['GET'])
+# @Auth.auth_required
+# def get_a_user(user_id):
+#   """
+#   Get a single user
+#   """
+#   user = UserModel.get_one_user(user_id)
+#   if not user:
+#     return custom_response({'error': 'user not found'}, 404)
   
-  ser_user = user_schema.dump(user)
-  return custom_response(ser_user, 200)
+#   ser_user = user_schema.dump(user)
+#   return custom_response(ser_user, 200)
 
 @user_api.route('/me', methods=['PUT'])
 @Auth.auth_required
@@ -93,16 +93,6 @@ def update():
   user.update(data)
   ser_user = user_schema.dump(user)
   return custom_response(ser_user, 200)
-
-@user_api.route('/me', methods=['DELETE'])
-@Auth.auth_required
-def delete():
-  """
-  Delete a user
-  """
-  user = UserModel.get_one_user(g.user.get('id'))
-  user.delete()
-  return custom_response({'message': 'deleted'}, 204)
 
 @user_api.route('/me', methods=['GET'])
 @Auth.auth_required

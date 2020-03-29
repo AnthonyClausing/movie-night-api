@@ -65,7 +65,6 @@ class UsersTest(unittest.TestCase):
     """ test user creation with empty request """
     user1 = {}
     res = self.client().post('/v1/users/', headers={'Content-Type': 'application/json'}, data=json.dumps(user1))
-    json_data = json.loads(res.data)
     self.assertEqual(res.status_code, 400)
   
   def test_user_login(self):
@@ -89,6 +88,31 @@ class UsersTest(unittest.TestCase):
     json_data = json.loads(res.data)
     self.assertFalse(json_data.get('jwt_token'))
     self.assertEqual(json_data.get('error'), 'invalid credentials')
+    self.assertEqual(res.status_code, 400)
+  
+  def test_user_login_with_invalid_user_data(self):
+    user1 = {
+      'broken': 'broken',
+      'email': 'olawale@mail.com',
+    }
+    res = self.client().post('/v1/users/', headers={'Content-Type': 'application/json'}, data=json.dumps(self.user))
+    self.assertEqual(res.status_code, 201)
+    res = self.client().post('/v1/users/login', headers={'Content-Type': 'application/json'}, data=json.dumps(user1))
+    json_data = json.loads(res.data)
+    self.assertFalse(json_data.get('jwt_token'))
+    self.assertEqual(json_data.get('broken')[0], 'Unknown field.')
+    self.assertEqual(res.status_code, 400)
+
+  def test_user_login_with_missing_password(self):
+    user1 = {
+      'email': 'olawale@mail.com',
+    }
+    res = self.client().post('/v1/users/', headers={'Content-Type': 'application/json'}, data=json.dumps(self.user))
+    self.assertEqual(res.status_code, 201)
+    res = self.client().post('/v1/users/login', headers={'Content-Type': 'application/json'}, data=json.dumps(user1))
+    json_data = json.loads(res.data)
+    self.assertFalse(json_data.get('jwt_token'))
+    self.assertEqual(json_data.get('error'),'you need email and password to sign in')
     self.assertEqual(res.status_code, 400)
 
   def test_user_login_with_invalid_email(self):
@@ -128,14 +152,27 @@ class UsersTest(unittest.TestCase):
     json_data = json.loads(res.data)
     self.assertEqual(res.status_code, 200)
     self.assertEqual(json_data.get('name'), 'new name')
-
-  def test_delete_user(self):
-    """ Test User Delete """
+    
+  def test_user_update_me_with_wrong_credentials(self):
+    """ Test User Update Me """
+    user1 = {
+      'wrong_key': 'this is so broken'
+    }
     res = self.client().post('/v1/users/', headers={'Content-Type': 'application/json'}, data=json.dumps(self.user))
     self.assertEqual(res.status_code, 201)
     api_token = json.loads(res.data).get('jwt_token')
-    res = self.client().delete('/v1/users/me', headers={'Content-Type': 'application/json', 'api-token': api_token})
-    self.assertEqual(res.status_code, 204)
+    res = self.client().put('/v1/users/me', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(user1))
+    json_data = json.loads(res.data)
+    print(res)
+    self.assertTrue(json_data['wrong_key'])
+    self.assertEqual(res.status_code, 400)
+  # def test_delete_user(self):
+  #   """ Test User Delete """
+  #   res = self.client().post('/v1/users/', headers={'Content-Type': 'application/json'}, data=json.dumps(self.user))
+  #   self.assertEqual(res.status_code, 201)
+  #   api_token = json.loads(res.data).get('jwt_token')
+  #   res = self.client().delete('/v1/users/me', headers={'Content-Type': 'application/json', 'api-token': api_token})
+  #   self.assertEqual(res.status_code, 204)
     
   def tearDown(self):
     """
