@@ -6,6 +6,14 @@ from marshmallow import ValidationError
 user_api = Blueprint('users', __name__)
 user_schema = UserSchema()
 
+@user_api.after_request # blueprint can also be app~~
+def after_request(response):
+    header = response.headers
+    header['Access-Control-Allow-Origin'] = '*'
+    header['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS, PUT, PATCH, DELETE'
+    header['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept, x-auth'
+    return response
+
 @user_api.route('/', methods=['POST'])
 def create():
   """
@@ -109,8 +117,12 @@ def custom_response(res, status_code):
   """
   Custom Response Function
   """
-  return Response(
+  resp = Response(
     mimetype="application/json",
     response=json.dumps(res),
     status=status_code
   )
+  resp.headers['Access-Control-Allow-Origin'] = '*'
+  resp.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
+  resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+  return resp

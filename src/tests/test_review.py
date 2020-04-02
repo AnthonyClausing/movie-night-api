@@ -28,7 +28,12 @@ class ReviewsTest(unittest.TestCase):
     with self.app.app_context():
       # create all tables
       db.create_all()
-
+  def test_response_headers(self):
+    res = self.client().post('/v1/users/', headers={'Content-Type': 'application/json'}, data=json.dumps(self.user))
+    self.assertTrue(res.headers['Access-Control-Allow-Origin'])
+    self.assertTrue(res.headers['Access-Control-Allow-Methods'])
+    self.assertTrue(res.headers['Access-Control-Allow-Headers'])
+  
   def test_review_creation(self):
     created_user = self.client().post('/v1/users/', headers=self.headers, data=json.dumps(self.user))
     token = json.loads(created_user.data).get('jwt_token')
@@ -53,6 +58,7 @@ class ReviewsTest(unittest.TestCase):
     token = json.loads(created_user.data).get('jwt_token')
     self.headers['api-token'] = token
     self.client().post('/v1/reviews/', headers=self.headers, data=json.dumps(self.review))
+    del self.headers['api-token']
     res = self.client().get('/v1/reviews/', headers=self.headers)
     json_data = json.loads(res.data)
 

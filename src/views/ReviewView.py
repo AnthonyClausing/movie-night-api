@@ -85,8 +85,12 @@ def custom_response(res, status_code):
   """
   Custom Response Function
   """
-  return Response(
+  resp = Response(
     mimetype="application/json",
     response=json.dumps(res),
     status=status_code
   )
+  resp.headers['Access-Control-Allow-Origin'] = '*'
+  resp.headers['Access-Control-Allow-Methods'] = '*'
+  resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+  return resp

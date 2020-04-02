@@ -22,7 +22,12 @@ class UsersTest(unittest.TestCase):
     with self.app.app_context():
       # create all tables
       db.create_all()
-  
+  def test_response_headers(self):
+    res = self.client().post('/v1/users/', headers={'Content-Type': 'application/json'}, data=json.dumps(self.user))
+    self.assertTrue(res.headers['Access-Control-Allow-Origin'])
+    self.assertTrue(res.headers['Access-Control-Allow-Methods'])
+    self.assertTrue(res.headers['Access-Control-Allow-Headers'])
+
   def test_user_creation(self):
     """ test user creation with valid credentials """
     res = self.client().post('/v1/users/', headers={'Content-Type': 'application/json'}, data=json.dumps(self.user))
